@@ -122,7 +122,7 @@ function LandingPage() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl font-bold mb-4">Transform Ideas into Market Solutions</h2>
+            <h2 className="text-3xl font-bold mb-4">Features</h2>
             <p className="text-gray-400">
               Explore features for managing translations, tracking performance, and analyzing data efficiently.
             </p>
