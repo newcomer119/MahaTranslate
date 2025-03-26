@@ -8,82 +8,69 @@ import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 const endpoints = [
   {
     name: 'Translation',
-    endpoint: '/translate',
+    endpoint: '/api/translate',
     method: 'POST',
-    description: 'Translate text between English and Hindi using MahaTranslate AI',
+    description: 'Translate text between English and Hindi using MahaTranslate\'s advanced AI model',
     request: {
       body: `{
-  "q": "Hello, how are you?",
-  "source": "en",
-  "target": "hi",
-  "X-RapidAPI-Key": "YOUR_API_KEY"
+  "text": "Hello, how are you?",
+  "sourceLang": "en",
+  "targetLang": "hi"
 }`,
-      curl: `curl --request POST \\
-  --url 'https://google-translate1.p.rapidapi.com/language/translate/v2' \\
-  --header 'content-type: application/x-www-form-urlencoded' \\
-  --header 'X-RapidAPI-Key: YOUR_API_KEY' \\
-  --header 'X-RapidAPI-Host: google-translate1.p.rapidapi.com' \\
-  --data 'q=Hello%2C%20how%20are%20you%3F&source=en&target=hi'`,
-      js: `const response = await fetch('https://google-translate1.p.rapidapi.com/language/translate/v2', {
+      curl: `curl -X POST https://mahatranslate.ai/api/translate \\
+  -H 'Content-Type: application/json' \\
+  -d '{"text":"Hello, how are you?","sourceLang":"en","targetLang":"hi"}'`,
+      js: `const response = await fetch('https://mahatranslate.ai/api/translate', {
   method: 'POST',
   headers: {
-    'content-type': 'application/x-www-form-urlencoded',
-    'X-RapidAPI-Key': 'YOUR_API_KEY',
-    'X-RapidAPI-Host': 'google-translate1.p.rapidapi.com'
+    'Content-Type': 'application/json'
   },
-  body: new URLSearchParams({
-    q: 'Hello, how are you?',
-    source: 'en',
-    target: 'hi'
+  body: JSON.stringify({
+    text: 'Hello, how are you?',
+    sourceLang: 'en',
+    targetLang: 'hi'
   })
 });
 
 const data = await response.json();
-console.log(data.data.translations[0].translatedText);`
+console.log(data.translatedText);`
     },
     response: `{
-  "data": {
-    "translations": [
-      {
-        "translatedText": "नमस्ते, आप कैसे हैं?"
-      }
-    ]
-  }
+  "success": true,
+  "translatedText": "नमस्ते, आप कैसे हैं?",
+  "confidence": 0.95
 }`
   },
   {
-    name: 'Common Translations',
-    endpoint: '/common',
-    method: 'GET',
-    description: 'Get a list of common pre-defined translations',
+    name: 'Speech to Text',
+    endpoint: '/api/speech-to-text',
+    method: 'POST',
+    description: 'Convert spoken audio to text for translation',
     request: {
-      body: 'No request body needed',
-      curl: `curl --request GET \\
-  --url 'https://mahatranslate.ai/api/common'`,
-      js: `const commonTranslations = {
-  // Greetings
-  'hello': 'नमस्ते',
-  'good morning': 'सुप्रभात',
-  'good night': 'शुभ रात्रि',
-  'thank you': 'धन्यवाद',
-  'welcome': 'स्वागत है',
-  
-  // Common phrases
-  'how are you': 'आप कैसे हैं',
-  'i am fine': 'मैं ठीक हूं',
-  'nice to meet you': 'आपसे मिलकर अच्छा लगा',
-  // ... more translations
-};`
+      body: `// Multipart form data
+{
+  "audio": [binary audio file],
+  "language": "en"
+}`,
+      curl: `curl -X POST https://mahatranslate.ai/api/speech-to-text \\
+  -F 'audio=@recording.wav' \\
+  -F 'language=en'`,
+      js: `const formData = new FormData();
+formData.append('audio', audioBlob);
+formData.append('language', 'en');
+
+const response = await fetch('https://mahatranslate.ai/api/speech-to-text', {
+  method: 'POST',
+  body: formData
+});
+
+const data = await response.json();
+console.log(data.text);`
     },
     response: `{
-  "translations": {
-    "hello": "नमस्ते",
-    "good morning": "सुप्रभात",
-    "good night": "शुभ रात्रि",
-    "thank you": "धन्यवाद",
-    "welcome": "स्वागत है"
-    // ... more translations
-  }
+  "success": true,
+  "text": "Hello, how are you?",
+  "confidence": 0.92
 }`
   }
 ];
@@ -107,7 +94,7 @@ function ApiDocs() {
             </Link>
             <div className="flex items-center gap-2">
               <Globe2 className="w-8 h-8 text-indigo-400" />
-              <h1 className="text-2xl font-bold">MahaTranslate AI</h1>
+              <h1 className="text-2xl font-bold">MahaTranslate API</h1>
             </div>
           </div>
 
@@ -118,21 +105,22 @@ function ApiDocs() {
                 <h2 className="text-2xl font-bold">Getting Started</h2>
               </div>
               <p className="text-gray-400 mb-4">
-                MahaTranslate AI provides a powerful translation service specifically optimized for English-Hindi translations.
-                Our API combines both Google Translate's accuracy and custom pre-defined translations for common phrases.
+                MahaTranslate provides a robust API for English-Hindi translation, powered by our custom-built AI model. 
+                Our API is designed to handle both text and speech translation with high accuracy and natural-sounding results.
               </p>
               <div className="bg-black/30 p-4 rounded-lg mb-4">
                 <h3 className="text-lg font-medium mb-2">Base URL</h3>
-                <code className="text-indigo-400">https://google-translate1.p.rapidapi.com</code>
+                <code className="text-indigo-400">https://mahatranslate.ai/api</code>
               </div>
-              <p className="text-gray-400">
-                To use the API, you'll need to:
-                <ol className="list-decimal ml-6 mt-2 space-y-2">
-                  <li>Sign up for a RapidAPI account</li>
-                  <li>Subscribe to the Google Translate API</li>
-                  <li>Use your API key in the X-RapidAPI-Key header</li>
-                </ol>
+              <p className="text-gray-400 mb-4">
+                All API requests should be made to the base URL. The API currently supports:
               </p>
+              <ul className="list-disc ml-6 text-gray-400 space-y-2">
+                <li>Text translation between English and Hindi</li>
+                <li>Speech-to-text conversion for audio input</li>
+                <li>High-accuracy translation with confidence scores</li>
+                <li>Natural language processing for context-aware translations</li>
+              </ul>
             </div>
 
             {endpoints.map((endpoint, index) => (
