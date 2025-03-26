@@ -4,12 +4,56 @@ import { motion } from 'framer-motion';
 import { Globe2, Copy, ArrowLeft, RotateCcw, Languages, Mic, StopCircle } from 'lucide-react';
 import { useReactMediaRecorder } from 'react-media-recorder';
 
-const LIBRETRANSLATE_API = 'https://libretranslate.de/translate';
+const TRANSLATE_API = 'https://google-translate1.p.rapidapi.com/language/translate/v2';
+const RAPID_API_KEY = 'faee1a9b8amsh52f248656814113p1817dcjsndd88faa9b6d1';
 
 const languages = [
-  { code: 'hi', name: 'Hindi' },
   { code: 'en', name: 'English' },
+  { code: 'hi', name: 'Hindi' }
 ];
+
+// Add this type definition
+type TranslationDictionary = {
+  [key: string]: string;
+};
+
+// Update the commonTranslations declaration with the type
+const commonTranslations: TranslationDictionary = {
+  // Greetings
+  'hello': 'नमस्ते',
+  'good morning': 'सुप्रभात',
+  'good night': 'शुभ रात्रि',
+  'thank you': 'धन्यवाद',
+  'welcome': 'स्वागत है',
+  
+  // Common phrases
+  'how are you': 'आप कैसे हैं',
+  'i am fine': 'मैं ठीक हूं',
+  'nice to meet you': 'आपसे मिलकर अच्छा लगा',
+  'what is your name': 'आपका नाम क्या है',
+  'my name is': 'मेरा नाम है',
+  
+  // Basic words
+  'water': 'पानी',
+  'food': 'खाना',
+  'house': 'घर',
+  'friend': 'दोस्त',
+  'family': 'परिवार',
+  
+  // Numbers
+  'one': 'एक',
+  'two': 'दो',
+  'three': 'तीन',
+  'four': 'चार',
+  'five': 'पांच',
+  
+  // Time-related
+  'today': 'आज',
+  'tomorrow': 'कल',
+  'yesterday': 'कल',
+  'time': 'समय',
+  'day': 'दिन',
+};
 
 function TranslationInterface() {
   const [sourceText, setSourceText] = useState('');
@@ -21,23 +65,33 @@ function TranslationInterface() {
   const [isTranscribing, setIsTranscribing] = useState(false);
 
   const handleTranslation = useCallback(async (text?: string) => {
-    const inputText = text || sourceText;
-    if (!inputText.trim()) return;
+    const inputText = (text || sourceText).toLowerCase().trim();
+    if (!inputText) return;
 
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(LIBRETRANSLATE_API, {
+      // Now TypeScript will recognize this properly
+      if (inputText in commonTranslations) {
+        setTranslatedText(commonTranslations[inputText]);
+        setIsLoading(false);
+        return;
+      }
+
+      // If no hardcoded translation, use the API
+      const response = await fetch(TRANSLATE_API, {
         method: 'POST',
-        body: JSON.stringify({
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded',
+          'X-RapidAPI-Key': RAPID_API_KEY,
+          'X-RapidAPI-Host': 'google-translate1.p.rapidapi.com'
+        },
+        body: new URLSearchParams({
           q: inputText,
           source: sourceLang,
-          target: targetLang,
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+          target: targetLang
+        })
       });
 
       if (!response.ok) {
@@ -45,7 +99,7 @@ function TranslationInterface() {
       }
 
       const data = await response.json();
-      setTranslatedText(data.translatedText);
+      setTranslatedText(data.data.translations[0].translatedText);
     } catch (err) {
       setError('Translation failed. Please try again.');
       console.error('Translation error:', err);
@@ -97,6 +151,12 @@ function TranslationInterface() {
     setError(null);
   };
 
+  // Add this function to show example translations
+  const addExampleTranslation = (text: string) => {
+    setSourceText(text);
+    setTranslatedText(commonTranslations[text.toLowerCase()]);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 to-purple-100">
       <div className="container mx-auto px-4 py-8">
@@ -116,6 +176,43 @@ function TranslationInterface() {
             <div className="flex items-center gap-2">
               <Globe2 className="w-8 h-8 text-indigo-600" />
               <h1 className="text-2xl font-bold text-gray-800">MahaTranslate</h1>
+            </div>
+          </div>
+
+          {/* Add this new section for example translations */}
+          <div className="mb-6 bg-white rounded-xl p-4 shadow-md">
+            <h2 className="text-lg font-semibold mb-3 text-indigo-600">Quick Examples:</h2>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => addExampleTranslation('Hello')}
+                className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full hover:bg-indigo-100"
+              >
+                Hello
+              </button>
+              <button
+                onClick={() => addExampleTranslation('Thank you')}
+                className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full hover:bg-indigo-100"
+              >
+                Thank you
+              </button>
+              <button
+                onClick={() => addExampleTranslation('Good morning')}
+                className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full hover:bg-indigo-100"
+              >
+                Good morning
+              </button>
+              <button
+                onClick={() => addExampleTranslation('How are you')}
+                className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full hover:bg-indigo-100"
+              >
+                How are you
+              </button>
+              <button
+                onClick={() => addExampleTranslation('Nice to meet you')}
+                className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full hover:bg-indigo-100"
+              >
+                Nice to meet you
+              </button>
             </div>
           </div>
 
