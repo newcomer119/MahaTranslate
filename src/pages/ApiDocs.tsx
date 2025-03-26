@@ -10,22 +10,28 @@ const endpoints = [
     name: 'Translation',
     endpoint: '/translate',
     method: 'POST',
-    description: 'Translate text between supported languages',
+    description: 'Translate text between English and Hindi using MahaTranslate AI',
     request: {
       body: `{
   "q": "Hello, how are you?",
   "source": "en",
-  "target": "hi"
+  "target": "hi",
+  "X-RapidAPI-Key": "YOUR_API_KEY"
 }`,
-      curl: `curl -X POST https://libretranslate.de/translate \\
-  -H 'Content-Type: application/json' \\
-  -d '{"q":"Hello, how are you?","source":"en","target":"hi"}'`,
-      js: `const response = await fetch('https://libretranslate.de/translate', {
+      curl: `curl --request POST \\
+  --url 'https://google-translate1.p.rapidapi.com/language/translate/v2' \\
+  --header 'content-type: application/x-www-form-urlencoded' \\
+  --header 'X-RapidAPI-Key: YOUR_API_KEY' \\
+  --header 'X-RapidAPI-Host: google-translate1.p.rapidapi.com' \\
+  --data 'q=Hello%2C%20how%20are%20you%3F&source=en&target=hi'`,
+      js: `const response = await fetch('https://google-translate1.p.rapidapi.com/language/translate/v2', {
   method: 'POST',
   headers: {
-    'Content-Type': 'application/json'
+    'content-type': 'application/x-www-form-urlencoded',
+    'X-RapidAPI-Key': 'YOUR_API_KEY',
+    'X-RapidAPI-Host': 'google-translate1.p.rapidapi.com'
   },
-  body: JSON.stringify({
+  body: new URLSearchParams({
     q: 'Hello, how are you?',
     source: 'en',
     target: 'hi'
@@ -33,40 +39,51 @@ const endpoints = [
 });
 
 const data = await response.json();
-console.log(data.translatedText);`
+console.log(data.data.translations[0].translatedText);`
     },
     response: `{
-  "translatedText": "नमस्ते, आप कैसे हैं?"
+  "data": {
+    "translations": [
+      {
+        "translatedText": "नमस्ते, आप कैसे हैं?"
+      }
+    ]
+  }
 }`
   },
   {
-    name: 'Language Detection',
-    endpoint: '/detect',
-    method: 'POST',
-    description: 'Detect the language of a text',
+    name: 'Common Translations',
+    endpoint: '/common',
+    method: 'GET',
+    description: 'Get a list of common pre-defined translations',
     request: {
-      body: `{
-  "q": "Hello, how are you?"
-}`,
-      curl: `curl -X POST https://libretranslate.de/detect \\
-  -H 'Content-Type: application/json' \\
-  -d '{"q":"Hello, how are you?"}'`,
-      js: `const response = await fetch('https://libretranslate.de/detect', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    q: 'Hello, how are you?'
-  })
-});
-
-const data = await response.json();
-console.log(data);`
+      body: 'No request body needed',
+      curl: `curl --request GET \\
+  --url 'https://mahatranslate.ai/api/common'`,
+      js: `const commonTranslations = {
+  // Greetings
+  'hello': 'नमस्ते',
+  'good morning': 'सुप्रभात',
+  'good night': 'शुभ रात्रि',
+  'thank you': 'धन्यवाद',
+  'welcome': 'स्वागत है',
+  
+  // Common phrases
+  'how are you': 'आप कैसे हैं',
+  'i am fine': 'मैं ठीक हूं',
+  'nice to meet you': 'आपसे मिलकर अच्छा लगा',
+  // ... more translations
+};`
     },
     response: `{
-  "confidence": 0.9,
-  "language": "en"
+  "translations": {
+    "hello": "नमस्ते",
+    "good morning": "सुप्रभात",
+    "good night": "शुभ रात्रि",
+    "thank you": "धन्यवाद",
+    "welcome": "स्वागत है"
+    // ... more translations
+  }
 }`
   }
 ];
@@ -90,7 +107,7 @@ function ApiDocs() {
             </Link>
             <div className="flex items-center gap-2">
               <Globe2 className="w-8 h-8 text-indigo-400" />
-              <h1 className="text-2xl font-bold">MahaTranslate API</h1>
+              <h1 className="text-2xl font-bold">MahaTranslate AI</h1>
             </div>
           </div>
 
@@ -101,15 +118,20 @@ function ApiDocs() {
                 <h2 className="text-2xl font-bold">Getting Started</h2>
               </div>
               <p className="text-gray-400 mb-4">
-                MahaTranslate API provides a simple and powerful way to translate text between multiple languages.
-                Our REST API accepts JSON requests and returns JSON responses.
+                MahaTranslate AI provides a powerful translation service specifically optimized for English-Hindi translations.
+                Our API combines both Google Translate's accuracy and custom pre-defined translations for common phrases.
               </p>
               <div className="bg-black/30 p-4 rounded-lg mb-4">
                 <h3 className="text-lg font-medium mb-2">Base URL</h3>
-                <code className="text-indigo-400">https://libretranslate.de</code>
+                <code className="text-indigo-400">https://google-translate1.p.rapidapi.com</code>
               </div>
               <p className="text-gray-400">
-                All API requests should be made to the base URL. All requests must be made over HTTPS.
+                To use the API, you'll need to:
+                <ol className="list-decimal ml-6 mt-2 space-y-2">
+                  <li>Sign up for a RapidAPI account</li>
+                  <li>Subscribe to the Google Translate API</li>
+                  <li>Use your API key in the X-RapidAPI-Key header</li>
+                </ol>
               </p>
             </div>
 
