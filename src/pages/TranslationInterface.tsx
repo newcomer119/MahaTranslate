@@ -1,16 +1,13 @@
 import React, { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { HfInference } from '@huggingface/inference';
 import { Globe2, Copy, ArrowLeft, RotateCcw, Languages, Mic, StopCircle } from 'lucide-react';
 import { useReactMediaRecorder } from 'react-media-recorder';
 
-const hf = new HfInference(import.meta.env.VITE_HF_API_KEY);
+const LIBRETRANSLATE_API = 'https://libretranslate.de/translate';
 
 const languages = [
-  { code: 'mr', name: 'Marathi' },
   { code: 'hi', name: 'Hindi' },
-  { code: 'ur', name: 'Urdu' },
   { code: 'en', name: 'English' },
 ];
 
@@ -18,7 +15,7 @@ function TranslationInterface() {
   const [sourceText, setSourceText] = useState('');
   const [translatedText, setTranslatedText] = useState('');
   const [sourceLang, setSourceLang] = useState('en');
-  const [targetLang, setTargetLang] = useState('mr');
+  const [targetLang, setTargetLang] = useState('hi');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isTranscribing, setIsTranscribing] = useState(false);
@@ -31,15 +28,24 @@ function TranslationInterface() {
     setError(null);
 
     try {
-      const result = await hf.translation({
-        model: 'facebook/mbart-large-50-many-to-many-mmt',
-        inputs: inputText,
-        parameters: {
-          src_lang: sourceLang,
-          tgt_lang: targetLang,
+      const response = await fetch(LIBRETRANSLATE_API, {
+        method: 'POST',
+        body: JSON.stringify({
+          q: inputText,
+          source: sourceLang,
+          target: targetLang,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
         },
       });
-      setTranslatedText(result.translation_text);
+
+      if (!response.ok) {
+        throw new Error('Translation failed');
+      }
+
+      const data = await response.json();
+      setTranslatedText(data.translatedText);
     } catch (err) {
       setError('Translation failed. Please try again.');
       console.error('Translation error:', err);
@@ -54,28 +60,13 @@ function TranslationInterface() {
       const response = await fetch(blobUrl);
       const blob = await response.blob();
 
-      // Convert blob to base64
-      const reader = new FileReader();
-      reader.readAsDataURL(blob);
-      reader.onloadend = async () => {
-        const base64data = reader.result as string;
-        const audioData = base64data.split(',')[1];
+      const formData = new FormData();
+      formData.append('audio', blob);
+      formData.append('language', sourceLang);
 
-        try {
-          const result = await hf.automaticSpeechRecognition({
-            model: 'openai/whisper-base',
-            data: Buffer.from(audioData, 'base64'),
-          });
-          
-          setSourceText(result.text);
-          handleTranslation(result.text);
-        } catch (err) {
-          setError('Failed to transcribe audio. Please try again.');
-          console.error('Transcription error:', err);
-        } finally {
-          setIsTranscribing(false);
-        }
-      };
+      // Note: This is a placeholder. We'll implement speech recognition later
+      setError('Speech recognition will be implemented soon.');
+      setIsTranscribing(false);
     } catch (err) {
       setError('Failed to process audio. Please try again.');
       console.error('Audio processing error:', err);

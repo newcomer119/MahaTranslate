@@ -7,7 +7,7 @@ const features = [
   {
     icon: <Languages className="w-6 h-6" />,
     title: 'Multiple Languages',
-    description: 'Support for Marathi, Hindi, Urdu, and English translations',
+    description: 'Support for Hindi and English translations',
   },
   {
     icon: <Mic className="w-6 h-6" />,
@@ -82,7 +82,7 @@ function LandingPage() {
                 Get Started
               </button>
               <button
-                onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
+                onClick={() => navigate('/docs')}
                 className="px-8 py-4 bg-white/10 rounded-full text-lg font-semibold hover:bg-white/20 transition-colors"
               >
                 Learn More
@@ -122,7 +122,7 @@ function LandingPage() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl font-bold mb-4">Features</h2>
+            <h2 className="text-3xl font-bold mb-4">Transform Ideas into Market Solutions</h2>
             <p className="text-gray-400">
               Explore features for managing translations, tracking performance, and analyzing data efficiently.
             </p>
